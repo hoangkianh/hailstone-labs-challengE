@@ -1,4 +1,6 @@
 const { ethers } = require('ethers')
+
+const logger = require('../src/logger')
 const helper = require('../src/helper')
 const fetchSwapEvents = require('../src/fetchSwapEvents')
 
@@ -11,8 +13,12 @@ jest.mock('ethers', () => ({
   },
 }))
 
-jest.mock('../src/helper.js', () => ({
+jest.mock('../src/helper', () => ({
   getBlockNoByTimestamp: jest.fn(),
+}))
+
+jest.mock('../src/logger', () => ({
+  error: jest.fn(),
 }))
 
 describe('fetchSwapEvents', () => {
@@ -67,5 +73,18 @@ describe('fetchSwapEvents', () => {
       endBlock(),
     )
     expect(events).toEqual([swapEvent1, swapEvent2])
+  })
+
+  test('should return an empty array and log an error if an exception occurs', async () => {
+    const mockedGetBlockNoByTimestamp = jest.mocked(helper.getBlockNoByTimestamp)
+    mockedGetBlockNoByTimestamp.mockRejectedValueOnce(new Error('Mocked error'))
+
+    const events = await fetchSwapEvents(poolAddress, startTimestamp, endTimestamp)
+
+    // Verify the function calls and returned result
+    expect(ethers.providers.JsonRpcProvider).toHaveBeenCalledTimes(1)
+    expect(mockedGetBlockNoByTimestamp).toHaveBeenCalledTimes(1)
+    expect(events).toEqual([])
+    expect(logger.error).toHaveBeenCalledWith('fetchSwapEvents: Error: Mocked error')
   })
 })
