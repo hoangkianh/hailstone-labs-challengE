@@ -4,7 +4,7 @@ const helper = require('./helper')
 const logger = require('./logger')
 const poolABI = require('../abi/Pool.json')
 
-const fetchSwapEvents = async function (poolAddress, startTimestamp, endTimestamp) {
+const fetchSwapEvents = async function (poolAddress, toTokenAddress, startTimestamp, endTimestamp) {
   try {
     const rpcUrl = process.env.RPC_URL || ''
 
@@ -21,16 +21,22 @@ const fetchSwapEvents = async function (poolAddress, startTimestamp, endTimestam
 
     const filter = poolContract.filters.Swap()
     let events = []
+    let errorMsg = ''
     try {
-      events = await poolContract.queryFilter(filter, startBlock, endBlock)
+      const swapEvents = await poolContract.queryFilter(filter, startBlock, endBlock)
+
+      events = swapEvents.filter(event => {
+        return event.args.toToken.toLowerCase() === toTokenAddress.toLowerCase()
+      })
     } catch (error) {
       logger.error(`queryFilter: ${error}`)
+      errorMsg = error
     }
 
-    return events
+    return { events, error: errorMsg }
   } catch (error) {
     logger.error(`fetchSwapEvents: ${error}`)
-    return []
+    return { events: [], error: errorMsg }
   }
 }
 
