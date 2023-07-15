@@ -36,8 +36,10 @@ const fetchSwapEvents = async function (poolAddress, toTokenAddress, startTimest
     return { events, error: errorMsg }
   } catch (error) {
     logger.error(`fetchSwapEvents: ${error}`)
-    return { events: [], error: errorMsg }
+    return { events: [], error: error }
   }
 }
 
-module.exports = fetchSwapEvents
+module.exports = {
+  fetchSwapEvents,
+}

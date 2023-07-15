@@ -1,7 +1,7 @@
 const { check, validationResult } = require('express-validator')
 const express = require('express')
 
-const fetchSwapEvents = require('../src/fetchSwapEvents')
+const func = require('../src/func')
 
 const router = express.Router()
 
@@ -22,7 +22,7 @@ router.get(
 
     const { poolAddress, toTokenAddress, startTimestamp, endTimestamp } = req.query
 
-    const swapEvents = await fetchSwapEvents(poolAddress, toTokenAddress, startTimestamp, endTimestamp)
+    const swapEvents = await func.fetchSwapEvents(poolAddress, toTokenAddress, startTimestamp, endTimestamp)
     res.json(swapEvents)
   },
 )
