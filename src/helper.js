@@ -1,13 +1,10 @@
-const { ethers, Contract } = require('ethers')
+const { ethers } = require('ethers')
 const dotenv = require('dotenv')
-
-const logger = require('./logger.js')
-const poolABI = require('../abi/Pool.json')
 
 dotenv.config()
 
 const helper = {
-  getBlockNoByTime: async function (timestamp) {
+  getBlockNoByTimestamp: async function (timestamp) {
     try {
       const apiKey = process.env.BSCSCAN_API_KEY || ''
 
@@ -19,7 +16,6 @@ const helper = {
       const response = await fetch(
         `https://api.bscscan.com/api?module=block&action=getblocknobytime&timestamp=${timestamp}&closest=before&apikey=${apiKey}`,
       )
-      logger.info('Fetch BSCScan api')
       const data = await response.json()
 
       if (data.status === '1') {
@@ -57,35 +53,6 @@ const helper = {
     }
 
     return minBlockNumber - 1
-  },
-  fetchSwapEvents: async function (poolAddress, startTimestamp, endTimestamp) {
-    try {
-      const rpcUrl = process.env.RPC_URL || ''
-
-      if (!rpcUrl) {
-        throw '⛔️ RPC_URL not detected! Add it to the .env file!'
-      }
-
-      const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
-      const poolContract = new Contract(poolAddress, poolABI, provider)
-
-      // Convert timestamps to block numbers
-      const startBlock = await this.getBlockNoByTime(startTimestamp)
-      const endBlock = await provider.getBlockNumber(endTimestamp)
-
-      const filter = poolContract.filters.Swap()
-      let events = []
-      try {
-        events = await poolContract.queryFilter(filter, startBlock, endBlock)
-      } catch (error) {
-        logger.error(`queryFilter: ${error}`)
-      }
-
-      return events
-    } catch (error) {
-      logger.error(`fetchSwapEvents: ${error}`)
-      return []
-    }
   },
 }
 
