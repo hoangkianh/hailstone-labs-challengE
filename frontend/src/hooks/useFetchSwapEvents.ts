@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import axios from 'axios'
 
 const useFetchSwapEvents = () => {
-  const [swapEvents, setSwapEvents] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const apiUrl = `${process.env.REACT_APP_API_URL}/swapEvents`

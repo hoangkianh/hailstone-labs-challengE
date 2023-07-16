@@ -7,7 +7,7 @@ import SwapEvent from '../types/SwapEvent'
 import Interval from '../types/Invertal'
 import useFetchSwapEvents from '../hooks/useFetchSwapEvents'
 import { shortenAddress } from '../utils'
-import { BigNumber, ethers } from 'ethers'
+import { ethers } from 'ethers'
 
 interface RowProps {
   row: {
@@ -60,6 +60,7 @@ function Row(props: RowProps) {
               <Table size="small" aria-label="purchases">
                 <TableHead>
                   <TableRow>
+                    <TableCell>TxHash</TableCell>
                     <TableCell>From</TableCell>
                     <TableCell>To</TableCell>
                     <TableCell>Input</TableCell>
@@ -68,15 +69,42 @@ function Row(props: RowProps) {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {events.map((eventRow: SwapEvent) => (
-                    <TableRow key={eventRow.id}>
-                      <TableCell>{shortenAddress(eventRow.sender)}</TableCell>
-                      <TableCell>{shortenAddress(eventRow.to)}</TableCell>
-                      <TableCell>{shortenAddress(eventRow.fromToken)}</TableCell>
-                      <TableCell>{shortenAddress(eventRow.toToken)}</TableCell>
-                      <TableCell>{Number(ethers.utils.formatEther(eventRow.toAmount)).toFixed(4)}</TableCell>
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell>Loading...</TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    <>
+                      {error ? (
+                        <TableRow>
+                          <TableCell>Could not load data</TableCell>
+                        </TableRow>
+                      ) : (
+                        <>
+                          {events.length > 0 ? (
+                            <>
+                              {events.map((eventRow: SwapEvent) => (
+                                <TableRow key={eventRow.txHash}>
+                                  <TableCell>{shortenAddress(eventRow.txHash)}</TableCell>
+                                  <TableCell>{shortenAddress(eventRow.sender)}</TableCell>
+                                  <TableCell>{shortenAddress(eventRow.to)}</TableCell>
+                                  <TableCell>{shortenAddress(eventRow.fromToken)}</TableCell>
+                                  <TableCell>{shortenAddress(eventRow.toToken)}</TableCell>
+                                  <TableCell>
+                                    {Number(ethers.utils.formatEther(eventRow.toAmount)).toFixed(4)}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </>
+                          ) : (
+                            <TableRow>
+                              <TableCell>No events</TableCell>
+                            </TableRow>
+                          )}
+                        </>
+                      )}
+                    </>
+                  )}
                 </TableBody>
               </Table>
             </Box>

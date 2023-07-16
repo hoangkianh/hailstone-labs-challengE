@@ -1,13 +1,14 @@
 import { BigNumber } from 'ethers'
 
 type SwapEvent = {
-  id: number
+  txHash: string
   sender: string
   fromToken: string
   toToken: string
   fromAmount: BigNumber
   toAmount: BigNumber
   to: string
+  fee: number
 }
 
 export default SwapEvent
