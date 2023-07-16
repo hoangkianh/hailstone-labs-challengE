@@ -17,8 +17,10 @@ const fetchSwapEvents = async function (poolAddress, toTokenAddress, startTimest
     const poolContract = new ethers.Contract(poolAddress, poolABI, provider)
 
     // Convert timestamps to block numbers
-    const startBlock = await helper.getBlockNoByTimestamp(startTimestamp)
-    const endBlock = await helper.getBlockNoByTimestamp(endTimestamp)
+    const [startBlock, endBlock] = await Promise.all([
+      helper.getBlockNoByTimestamp(startTimestamp),
+      helper.getBlockNoByTimestamp(endTimestamp),
+    ])
 
     const filter = poolContract.filters.Swap()
     let events = []
@@ -65,7 +67,7 @@ const calculateSwapFeeSum = async function (poolAddress, toTokenAddress, startTi
     console.log(error)
     logger.error(`calculateSwapFeeSum: ${error}`)
   }
-  return swapFeeSum
+  return { totalSwapFee: swapFeeSum }
 }
 
 module.exports = {
