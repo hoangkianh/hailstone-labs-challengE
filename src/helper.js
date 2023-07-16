@@ -1,6 +1,8 @@
 const { ethers } = require('ethers')
 const dotenv = require('dotenv')
 
+const logger = require('./logger')
+
 dotenv.config()
 
 const helper = {
@@ -16,6 +18,7 @@ const helper = {
       const response = await fetch(
         `https://api.bscscan.com/api?module=block&action=getblocknobytime&timestamp=${timestamp}&closest=before&apikey=${apiKey}`,
       )
+      logger.info('Call BSCScan API')
       const data = await response.json()
 
       if (data.status === '1') {

@@ -1,17 +1,21 @@
-const { ethers } = require('ethers')
+const { ethers, BigNumber, utils } = require('ethers')
 
 const logger = require('../src/logger')
 const helper = require('../src/helper')
 const func = require('../src/func')
 
-jest.mock('ethers', () => ({
-  ethers: {
-    providers: {
-      JsonRpcProvider: jest.fn(),
+jest.mock('ethers', () => {
+  const originEthers = jest.requireActual('ethers')
+  return {
+    ...originEthers,
+    ethers: {
+      providers: {
+        JsonRpcProvider: jest.fn(),
+      },
+      Contract: jest.fn(),
     },
-    Contract: jest.fn(),
-  },
-}))
+  }
+})
 
 jest.mock('../src/helper', () => ({
   getBlockNoByTimestamp: jest.fn(),
@@ -23,7 +27,7 @@ jest.mock('../src/logger', () => ({
 
 describe('fetchSwapEvents', () => {
   const poolAddress = '0x312Bc7eAAF93f1C60Dc5AfC115FcCDE161055fb0'
-  const toToken = '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d'
+  const toTokenAddress = '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d'
   const startTimestamp = 1689396159
   const endTimestamp = 1689393756
 
@@ -34,6 +38,7 @@ describe('fetchSwapEvents', () => {
         Swap: jest.fn(),
       },
       queryFilter: jest.fn(),
+      decimals: jest.fn(),
     })
   })
 
@@ -46,7 +51,6 @@ describe('fetchSwapEvents', () => {
     const startBlock = mockedGetBlockNoByTimestamp.mockReturnValue(123456)
     const endBlock = mockedGetBlockNoByTimestamp.mockReturnValue(123457)
 
-    // Mock contract.queryFilter to return swap events
     const mockedQueryFilter = jest.mocked(ethers.Contract().queryFilter)
 
     const swapEvent1 = {
@@ -71,7 +75,7 @@ describe('fetchSwapEvents', () => {
     }
     mockedQueryFilter.mockResolvedValueOnce([swapEvent1, swapEvent2])
 
-    const events = await func.fetchSwapEvents(poolAddress, toToken, startTimestamp, endTimestamp)
+    const events = await func.fetchSwapEvents(poolAddress, toTokenAddress, startTimestamp, endTimestamp)
     expect(mockedQueryFilter).toHaveBeenCalledWith(
       jest.mocked(ethers.Contract().filters.Swap()),
       startBlock(),
@@ -84,12 +88,75 @@ describe('fetchSwapEvents', () => {
     const mockedGetBlockNoByTimestamp = jest.mocked(helper.getBlockNoByTimestamp)
     mockedGetBlockNoByTimestamp.mockRejectedValueOnce(new Error('Mocked error'))
 
-    const events = await func.fetchSwapEvents(poolAddress, toToken, startTimestamp, endTimestamp)
+    const events = await func.fetchSwapEvents(poolAddress, toTokenAddress, startTimestamp, endTimestamp)
 
     // Verify the function calls and returned result
     expect(ethers.providers.JsonRpcProvider).toHaveBeenCalledTimes(1)
     expect(mockedGetBlockNoByTimestamp).toHaveBeenCalledTimes(1)
     expect(events.events).toEqual([])
     expect(logger.error).toHaveBeenCalledWith('fetchSwapEvents: Error: Mocked error')
+  })
+})
+
+describe('calculateSwapFeeSum', () => {
+  const poolAddress = '0x312Bc7eAAF93f1C60Dc5AfC115FcCDE161055fb0'
+  const toTokenAddress = '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d'
+  const startTimestamp = 1689396159
+  const endTimestamp = 1689393756
+
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('should calculate the sum of swap fees correctly', async () => {
+    const swapEvents = [
+      {
+        args: {
+          toToken: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
+          toAmount: utils.parseUnits('100', 18),
+        },
+      },
+      {
+        args: {
+          toToken: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
+          toAmount: utils.parseUnits('200', 18),
+        },
+      },
+      {
+        args: {
+          toToken: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
+          toAmount: utils.parseUnits('300', 18),
+        },
+      },
+    ]
+
+    const mockedQueryFilter = jest.mocked(ethers.Contract().queryFilter)
+    mockedQueryFilter.mockResolvedValueOnce(swapEvents)
+
+    const decimals = jest.mocked(ethers.Contract().decimals)
+    decimals.mockResolvedValueOnce(18)
+
+    const swapFeeSum = await func.calculateSwapFeeSum(poolAddress, toTokenAddress, startTimestamp, endTimestamp)
+    expect(swapFeeSum).toEqual(0.06)
+  })
+
+  test('should return 0 if there are no swap events', async () => {
+    const mockedQueryFilter = jest.mocked(ethers.Contract().queryFilter)
+    mockedQueryFilter.mockResolvedValueOnce([])
+
+    const swapFeeSum = await func.calculateSwapFeeSum(poolAddress, toTokenAddress, startTimestamp, endTimestamp)
+
+    expect(swapFeeSum).toEqual(0)
+  })
+
+  test('should return 0 if fetchSwapEvents throws an error', async () => {
+    const mockedQueryFilter = jest.mocked(ethers.Contract().queryFilter)
+    mockedQueryFilter.mockResolvedValueOnce([])
+
+    jest.spyOn(func, 'fetchSwapEvents').mockRejectedValue(new Error('Mocked error'))
+
+    const swapFeeSum = await func.calculateSwapFeeSum(poolAddress, toTokenAddress, startTimestamp, endTimestamp)
+
+    expect(swapFeeSum).toBe(0)
   })
 })
