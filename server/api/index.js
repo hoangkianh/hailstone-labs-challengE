@@ -4,6 +4,7 @@ const { ethers } = require('ethers')
 
 const func = require('../src/func')
 const erc20ABI = require('../abi/ERC20.json')
+const helper = require('../src/helper')
 
 const router = express.Router()
 
@@ -30,18 +31,26 @@ router.get(
     const erc20Contract = new ethers.Contract(toTokenAddress, erc20ABI, provider)
     const decimals = await erc20Contract.decimals()
 
-    const result = swapEvents.events.map(event => {
+    const promises = swapEvents.events.map(async event => {
+      const [fromAmount, toAmount] = await Promise.all([
+        helper.formatAmount(event.args.fromToken, event.args.fromAmount),
+        helper.formatAmount(event.args.toToken, event.args.toAmount),
+      ])
+
       return {
         txHash: event.transactionHash,
         sender: event.args.sender,
         to: event.args.to,
         fromToken: event.args.fromToken,
         toToken: event.args.toToken,
-        fromAmount: event.args.fromAmount,
-        toAmount: event.args.toAmount,
+        fromAmount,
+        toAmount,
         fee: ethers.utils.formatUnits(event.args.toAmount, decimals) * 0.0001, // 0.01% fee,
       }
     })
+
+    const result = await Promise.all(promises)
+
     res.json(result)
   },
 )

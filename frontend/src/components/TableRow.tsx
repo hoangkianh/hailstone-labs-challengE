@@ -7,7 +7,6 @@ import SwapEvent from '../types/SwapEvent'
 import Interval from '../types/Invertal'
 import useFetchSwapEvents from '../hooks/useFetchSwapEvents'
 import { getExplorerLink, shortenAddress } from '../utils'
-import { ethers } from 'ethers'
 
 interface RowProps {
   row: {
@@ -112,9 +111,9 @@ function Row(props: RowProps) {
                                       {shortenAddress(eventRow.to)}
                                     </a>
                                   </TableCell>
-                                  <TableCell>{shortenAddress(eventRow.fromToken)}</TableCell>
-                                  <TableCell>{shortenAddress(eventRow.toToken)}</TableCell>
-                                  <TableCell>{eventRow.fee.toFixed(4)}</TableCell>
+                                  <TableCell>{eventRow.fromAmount}</TableCell>
+                                  <TableCell>{eventRow.toAmount}</TableCell>
+                                  <TableCell>{eventRow.fee.toFixed(4)} USDC</TableCell>
                                 </TableRow>
                               ))}
                             </>

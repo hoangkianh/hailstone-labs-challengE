@@ -1,12 +1,10 @@
-import { BigNumber } from 'ethers'
-
 type SwapEvent = {
   txHash: string
   sender: string
   fromToken: string
   toToken: string
-  fromAmount: BigNumber
-  toAmount: BigNumber
+  fromAmount: string
+  toAmount: string
   to: string
   fee: number
 }

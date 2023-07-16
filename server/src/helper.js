@@ -2,6 +2,7 @@ const { ethers } = require('ethers')
 const dotenv = require('dotenv')
 
 const logger = require('./logger')
+const erc20ABI = require('../abi/ERC20.json')
 
 dotenv.config()
 
@@ -63,6 +64,19 @@ const helper = {
     }
 
     return minBlockNumber - 1
+  },
+  getTokenInfo: async function (tokenAddress) {
+    const provider = new ethers.providers.JsonRpcProvider(process.env.REACT_APP_RPC_URL ?? 'https://bscrpc.com')
+    const erc20Contract = new ethers.Contract(tokenAddress, erc20ABI, provider)
+    const symbol = await erc20Contract.symbol()
+    const decimals = await erc20Contract.decimals()
+
+    return { symbol, decimals }
+  },
+  formatAmount: async function (tokenAddress, amount) {
+    const tokenInfo = await this.getTokenInfo(tokenAddress)
+    const amountStr = ethers.utils.formatUnits(amount, tokenInfo.decimals)
+    return `${Number(amountStr).toFixed(4)} ${tokenInfo.symbol}`
   },
 }
 
