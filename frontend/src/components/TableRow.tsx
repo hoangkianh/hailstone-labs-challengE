@@ -6,7 +6,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import SwapEvent from '../types/SwapEvent'
 import Interval from '../types/Invertal'
 import useFetchSwapEvents from '../hooks/useFetchSwapEvents'
-import { shortenAddress } from '../utils'
+import { getExplorerLink, shortenAddress } from '../utils'
 import { ethers } from 'ethers'
 
 interface RowProps {
@@ -85,14 +85,36 @@ function Row(props: RowProps) {
                             <>
                               {events.map((eventRow: SwapEvent) => (
                                 <TableRow key={eventRow.txHash}>
-                                  <TableCell>{shortenAddress(eventRow.txHash)}</TableCell>
-                                  <TableCell>{shortenAddress(eventRow.sender)}</TableCell>
-                                  <TableCell>{shortenAddress(eventRow.to)}</TableCell>
+                                  <TableCell>
+                                    <a
+                                      className="underline"
+                                      href={getExplorerLink(eventRow.txHash, 'transaction')}
+                                      target="_blank"
+                                    >
+                                      {shortenAddress(eventRow.txHash)}
+                                    </a>
+                                  </TableCell>
+                                  <TableCell>
+                                    <a
+                                      className="underline"
+                                      href={getExplorerLink(eventRow.sender, 'address')}
+                                      target="_blank"
+                                    >
+                                      {shortenAddress(eventRow.sender)}
+                                    </a>
+                                  </TableCell>
+                                  <TableCell>
+                                    <a
+                                      className="underline"
+                                      href={getExplorerLink(eventRow.to, 'address')}
+                                      target="_blank"
+                                    >
+                                      {shortenAddress(eventRow.to)}
+                                    </a>
+                                  </TableCell>
                                   <TableCell>{shortenAddress(eventRow.fromToken)}</TableCell>
                                   <TableCell>{shortenAddress(eventRow.toToken)}</TableCell>
-                                  <TableCell>
-                                    {Number(ethers.utils.formatEther(eventRow.toAmount)).toFixed(4)}
-                                  </TableCell>
+                                  <TableCell>{eventRow.fee.toFixed(4)}</TableCell>
                                 </TableRow>
                               ))}
                             </>
