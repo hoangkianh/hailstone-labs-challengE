@@ -2,8 +2,13 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import useTimestampIntervals from './useGetTimestampIntervals'
 
+type SwapFeeData = {
+  interval: string
+  swapFee: number
+}
+
 type UseFetchSwapFeeResult = {
-  swapFeeData: number[]
+  swapFeeData: SwapFeeData[]
   isLoading: boolean
   error: string | null
 }
@@ -11,7 +16,7 @@ const useFetchSwapFee = (poolAddress: string, toTokenAddress: string): UseFetchS
   const timestampIntervals = useTimestampIntervals()
   const apiUrl = `${process.env.REACT_APP_API_URL}/swapFee`
 
-  const [swapFeeData, setSwapFeeData] = useState<number[]>([])
+  const [swapFeeData, setSwapFeeData] = useState<SwapFeeData[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -32,7 +37,12 @@ const useFetchSwapFee = (poolAddress: string, toTokenAddress: string): UseFetchS
         })
 
         const responses = await Promise.all(promises)
-        const data = responses.map(response => response.data)
+        const data: SwapFeeData[] = responses.map((response, index) => {
+          return {
+            interval: timestampIntervals[index].label,
+            swapFee: response.data,
+          }
+        })
         setSwapFeeData(data)
       } catch (e: any) {
         setError(e.message)

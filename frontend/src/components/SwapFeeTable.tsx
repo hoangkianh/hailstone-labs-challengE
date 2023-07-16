@@ -9,54 +9,28 @@ import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import Paper from '@mui/material/Paper'
 import Row from './TableRow'
+import useFetchSwapEvents from '../hooks/useFetchSwapEvents'
+import useTimestampIntervals from '../hooks/useGetTimestampIntervals'
+import useFetchSwapFee from '../hooks/useFetchSwapFee'
+
+type RowData = { interval: string; swapFee: number }
 
 function SwapFeeTable() {
-  const [granularity, setGranularity] = useState(60)
-  const [swapEvents, setSwapEvents] = useState<SwapEvent[]>([])
-
-  const rows = [
-    { granularity: '1 min', swapFee: 0.2, events: swapEvents },
-    { granularity: '5 mins', swapFee: 0.2, events: swapEvents },
-    { granularity: '10 mins', swapFee: 0.2, events: swapEvents },
-    { granularity: '1 hour', swapFee: 0.2, events: swapEvents },
-  ]
+  const [rows, setRows] = useState<RowData[]>([])
+  const toTokenAddress = '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d' // USDC
+  const { swapFeeData, isLoading, error } = useFetchSwapFee(process.env.REACT_APP_POOL_ADDRESS ?? '', toTokenAddress)
 
   useEffect(() => {
-    fetchSwapEvents()
-  }, [granularity])
+    const _rows: RowData[] = []
+    swapFeeData.map(item => {
+      _rows.push({
+        interval: item.interval,
+        swapFee: item.swapFee,
+      })
+    })
 
-  const fetchSwapEvents = () => {
-    const mockSwapEvents: SwapEvent[] = [
-      {
-        id: 0,
-        sender: '0x1234',
-        fromToken: '0x1234',
-        toToken: '0x1234',
-        fromAmount: BigNumber.from(1),
-        toAmount: BigNumber.from(2),
-        to: '0x4567',
-      },
-      {
-        id: 1,
-        sender: '0x4567',
-        fromToken: '0x1234',
-        toToken: '0x1234',
-        fromAmount: BigNumber.from(1),
-        toAmount: BigNumber.from(2),
-        to: '0x1234',
-      },
-      {
-        id: 2,
-        sender: '0x1234',
-        fromToken: '0x1234',
-        toToken: '0x1234',
-        fromAmount: BigNumber.from(1),
-        toAmount: BigNumber.from(2),
-        to: '0x4567',
-      },
-    ]
-    setSwapEvents(mockSwapEvents)
-  }
+    setRows(_rows)
+  }, [swapFeeData, isLoading, error])
 
   return (
     <div className="w-1/2">
@@ -70,9 +44,25 @@ function SwapFeeTable() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row: { granularity: string; swapFee: number; events: SwapEvent[] }) => (
-              <Row row={row} />
-            ))}
+            {isLoading ? (
+              <TableRow>
+                <TableCell>Loading...</TableCell>
+              </TableRow>
+            ) : (
+              <>
+                {error ? (
+                  <TableRow>
+                    <TableCell>Could not load data</TableCell>
+                  </TableRow>
+                ) : (
+                  <>
+                    {rows.map((row: { interval: string; swapFee: number }) => (
+                      <Row key={row.interval} row={row} />
+                    ))}
+                  </>
+                )}
+              </>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

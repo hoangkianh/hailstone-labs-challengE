@@ -7,9 +7,8 @@ import SwapEvent from '../types/SwapEvent'
 
 interface RowProps {
   row: {
-    granularity: string
+    interval: string
     swapFee: number
-    events: SwapEvent[]
   }
 }
 
@@ -18,15 +17,15 @@ function Row(props: RowProps) {
   const [open, setOpen] = React.useState(false)
 
   return (
-    <React.Fragment>
+    <>
       <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
         <TableCell>
           <IconButton aria-label="expand row" size="small" onClick={() => setOpen(!open)}>
             {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
         </TableCell>
-        <TableCell>{row.granularity}</TableCell>
-        <TableCell>{row.swapFee}</TableCell>
+        <TableCell>{row.interval}</TableCell>
+        <TableCell>{row.swapFee.toFixed(4)} USDC</TableCell>
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
@@ -46,7 +45,7 @@ function Row(props: RowProps) {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {row.events.map((eventRow: SwapEvent) => (
+                  {/* {row.events.map((eventRow: SwapEvent) => (
                     <TableRow key={eventRow.id}>
                       <TableCell>{eventRow.sender}</TableCell>
                       <TableCell>{eventRow.to}</TableCell>
@@ -54,14 +53,14 @@ function Row(props: RowProps) {
                       <TableCell>{eventRow.toToken}</TableCell>
                       <TableCell>{eventRow.toAmount.toString()}</TableCell>
                     </TableRow>
-                  ))}
+                  ))} */}
                 </TableBody>
               </Table>
             </Box>
           </Collapse>
         </TableCell>
       </TableRow>
-    </React.Fragment>
+    </>
   )
 }
 
