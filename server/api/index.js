@@ -55,7 +55,7 @@ router.get(
     const { poolAddress, toTokenAddress, startTimestamp, endTimestamp } = req.query
 
     const totalFee = await func.calculateSwapFeeSum(poolAddress, toTokenAddress, startTimestamp, endTimestamp)
-    res.json({ totalFee })
+    res.json(totalFee)
   },
 )
 

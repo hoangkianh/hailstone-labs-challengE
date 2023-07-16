@@ -6,6 +6,10 @@ const logger = require('./logger')
 dotenv.config()
 
 const helper = {
+  sleep: async function (time) {
+    logger.debug('======Sleep======')
+    return new Promise(resolve => setTimeout(resolve, time))
+  },
   getBlockNoByTimestamp: async function (timestamp) {
     try {
       const apiKey = process.env.BSCSCAN_API_KEY || ''
@@ -19,6 +23,9 @@ const helper = {
         `https://api.bscscan.com/api?module=block&action=getblocknobytime&timestamp=${timestamp}&closest=before&apikey=${apiKey}`,
       )
       logger.info('Call BSCScan API')
+
+      // sleep 2 secs due to the BSCScan limit
+      this.sleep(2000)
       const data = await response.json()
 
       if (data.status === '1') {
