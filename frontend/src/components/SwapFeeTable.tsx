@@ -30,7 +30,7 @@ function SwapFeeTable() {
   }, [swapFeeData, isLoading, error])
 
   return (
-    <div className="w-1/2">
+    <div className="md:w-1/2">
       <TableContainer component={Paper}>
         <Table aria-label="collapsible table">
           <TableHead>
