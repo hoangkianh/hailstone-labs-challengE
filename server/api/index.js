@@ -23,7 +23,17 @@ router.get(
     const { poolAddress, toTokenAddress, startTimestamp, endTimestamp } = req.query
 
     const swapEvents = await func.fetchSwapEvents(poolAddress, toTokenAddress, startTimestamp, endTimestamp)
-    res.json(swapEvents)
+    const result = swapEvents.events.map(event => {
+      return {
+        sender: event.args.sender,
+        to: event.args.to,
+        fromToken: event.args.fromToken,
+        toToken: event.args.toToken,
+        fromAmount: event.args.fromAmount,
+        toAmount: event.args.toAmount,
+      }
+    })
+    res.json(result)
   },
 )
 
@@ -44,8 +54,8 @@ router.get(
 
     const { poolAddress, toTokenAddress, startTimestamp, endTimestamp } = req.query
 
-    const swapEvents = await func.calculateSwapFeeSum(poolAddress, toTokenAddress, startTimestamp, endTimestamp)
-    res.json(swapEvents)
+    const totalFee = await func.calculateSwapFeeSum(poolAddress, toTokenAddress, startTimestamp, endTimestamp)
+    res.json({ totalFee })
   },
 )
 

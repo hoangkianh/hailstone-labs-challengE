@@ -29,7 +29,10 @@ const fetchSwapEvents = async function (poolAddress, toTokenAddress, startTimest
       const swapEvents = await poolContract.queryFilter(filter, startBlock, endBlock)
 
       events = swapEvents.filter(event => {
-        return event.args.toToken.toLowerCase() === toTokenAddress.toLowerCase()
+        return (
+          event.args.fromToken.toLowerCase() === toTokenAddress.toLowerCase() ||
+          event.args.toToken.toLowerCase() === toTokenAddress.toLowerCase()
+        )
       })
     } catch (error) {
       logger.error(`queryFilter: ${error}`)
@@ -67,7 +70,7 @@ const calculateSwapFeeSum = async function (poolAddress, toTokenAddress, startTi
     console.log(error)
     logger.error(`calculateSwapFeeSum: ${error}`)
   }
-  return { totalSwapFee: swapFeeSum }
+  return swapFeeSum
 }
 
 module.exports = {
