@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import useTimestampIntervals from './useGetTimestampIntervals'
+import Interval from '../types/Invertal'
 
 type SwapFeeData = {
-  interval: string
+  interval: Interval
   swapFee: number
 }
 
@@ -39,7 +40,7 @@ const useFetchSwapFee = (poolAddress: string, toTokenAddress: string): UseFetchS
         const responses = await Promise.all(promises)
         const data: SwapFeeData[] = responses.map((response, index) => {
           return {
-            interval: timestampIntervals[index].label,
+            interval: timestampIntervals[index],
             swapFee: response.data,
           }
         })

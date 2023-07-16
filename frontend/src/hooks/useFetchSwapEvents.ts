@@ -1,19 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 
-const useFetchSwapEvents = (
-  poolAddress: string,
-  toTokenAddress: string,
-  startTimestamp: number,
-  endTimestamp: number,
-) => {
+const useFetchSwapEvents = () => {
   const [swapEvents, setSwapEvents] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const apiUrl = `${process.env.REACT_APP_API_URL}/swapEvents`
 
-  useEffect(() => {
-    const fetchSwapEvents = async () => {
+  const fetchSwapEvents = useCallback(
+    async (poolAddress: string, toTokenAddress: string, startTimestamp: number, endTimestamp: number) => {
       setIsLoading(true)
 
       try {
@@ -26,18 +21,18 @@ const useFetchSwapEvents = (
           },
         })
 
-        setSwapEvents(response.data.events)
+        setIsLoading(false)
+        return response.data
       } catch (e: any) {
+        setIsLoading(false)
         setError(e.message)
+        return []
       }
+    },
+    [],
+  )
 
-      setIsLoading(false)
-    }
-
-    fetchSwapEvents()
-  }, [poolAddress, toTokenAddress, startTimestamp, endTimestamp])
-
-  return { swapEvents, isLoading, error }
+  return { fetchSwapEvents, isLoading, error }
 }
 
 export default useFetchSwapEvents

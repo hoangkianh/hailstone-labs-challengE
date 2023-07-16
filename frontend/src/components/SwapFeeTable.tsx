@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from 'react'
-import SwapEvent from '../types/SwapEvent'
-import { BigNumber } from 'ethers'
+import { useEffect, useState } from 'react'
 import Table from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
 import TableCell from '@mui/material/TableCell'
@@ -9,11 +7,10 @@ import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import Paper from '@mui/material/Paper'
 import Row from './TableRow'
-import useFetchSwapEvents from '../hooks/useFetchSwapEvents'
-import useTimestampIntervals from '../hooks/useGetTimestampIntervals'
 import useFetchSwapFee from '../hooks/useFetchSwapFee'
+import Interval from '../types/Invertal'
 
-type RowData = { interval: string; swapFee: number }
+type RowData = { interval: Interval; swapFee: number }
 
 function SwapFeeTable() {
   const [rows, setRows] = useState<RowData[]>([])
@@ -56,8 +53,8 @@ function SwapFeeTable() {
                   </TableRow>
                 ) : (
                   <>
-                    {rows.map((row: { interval: string; swapFee: number }) => (
-                      <Row key={row.interval} row={row} />
+                    {rows.map((row: { interval: Interval; swapFee: number }) => (
+                      <Row key={row.interval.label} row={row} />
                     ))}
                   </>
                 )}
