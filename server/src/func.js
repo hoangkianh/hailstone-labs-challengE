@@ -29,10 +29,7 @@ const fetchSwapEvents = async function (poolAddress, toTokenAddress, startTimest
       const swapEvents = await poolContract.queryFilter(filter, startBlock, endBlock)
 
       events = swapEvents.filter(event => {
-        return (
-          event.args.fromToken.toLowerCase() === toTokenAddress.toLowerCase() ||
-          event.args.toToken.toLowerCase() === toTokenAddress.toLowerCase()
-        )
+        return event.args.toToken.toLowerCase() === toTokenAddress.toLowerCase()
       })
     } catch (error) {
       logger.error(`queryFilter: ${error}`)
