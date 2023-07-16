@@ -4,8 +4,8 @@ const dotenv = require('dotenv')
 const express = require('express')
 const http = require('http')
 
-const logger = require('./logger')
-const api = require('../api/index')
+const logger = require('./src/logger')
+const api = require('./api/index')
 
 const app = express()
 
